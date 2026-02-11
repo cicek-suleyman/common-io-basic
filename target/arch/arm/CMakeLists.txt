@@ -1,0 +1,2 @@
+add_library(CORE_TARGET INTERFACE)
+target_include_directories(CORE_TARGET INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS_5/CMSIS/Core/Include)

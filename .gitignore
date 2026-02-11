@@ -3,3 +3,9 @@ docs/doxygen/output/
 
 # VS Code ignores
 .vscode/
+
+# JetBrains ingores
+.idea/
+
+# build directory ignores
+build/

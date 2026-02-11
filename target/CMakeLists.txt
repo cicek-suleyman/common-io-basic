@@ -1,0 +1,12 @@
+add_subdirectory(arch)
+
+if(NOT BOARD_DIR AND BOARD)
+    set(BOARD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/board/${BOARD})
+    if(IS_DIRECTORY ${BOARD_DIR})
+        add_subdirectory(${BOARD_DIR})
+    endif ()
+endif ()
+
+if(DEVICE MATCHES "STM32")
+    add_subdirectory(st)
+endif ()

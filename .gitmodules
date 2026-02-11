@@ -1,5 +1,5 @@
-[submodule "target/arm"]
-	path = target/arm
+[submodule "target/arch/arm/CMSIS_5"]
+	path = target/arch/arm/CMSIS_5
 	url = git@github.com:ARM-software/CMSIS_5.git
 [submodule "target/st/f4/cmsis-device-f4"]
 	path = target/st/f4/cmsis-device-f4
@@ -7,3 +7,9 @@
 [submodule "target/st/f4/stm32f4xx-hal-driver"]
 	path = target/st/f4/stm32f4xx-hal-driver
 	url = git@github.com:STMicroelectronics/stm32f4xx-hal-driver.git
+[submodule "target/st/f1/stm32f1xx-hal-driver"]
+	path = target/st/f1/stm32f1xx-hal-driver
+	url = git@github.com:STMicroelectronics/stm32f1xx-hal-driver.git
+[submodule "target/st/f1/cmsis-device-f1"]
+	path = target/st/f1/cmsis-device-f1
+	url = git@github.com:STMicroelectronics/cmsis-device-f1.git

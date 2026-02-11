@@ -1,0 +1,6 @@
+set(CORE_LIBRARIES core-arch)
+
+add_subdirectory(${CMAKE_SYSTEM_PROCESSOR})
+
+add_library(CORE_LIBRARIES INTERFACE)
+target_link_libraries(CORE_LIBRARIES INTERFACE CORE_TARGET)
