@@ -94,6 +94,11 @@ IotI2CHandle_t iot_i2c_open( int32_t lI2CInstance ) {
 
         // TODO register irq callbacks
 
+        HAL_NVIC_SetPriority(pxHandle->irq, 0, 0);
+        HAL_NVIC_EnableIRQ(pxHandle->irq);
+        HAL_NVIC_SetPriority(pxHandle->irq + 1, 0, 0);
+        HAL_NVIC_EnableIRQ(pxHandle->irq + 1);
+
         i2c_list = ll_append(i2c_list, pxHandle);
 
         return (IotI2CHandle_t)pxHandle;
@@ -238,7 +243,7 @@ int32_t iot_i2c_ioctl( IotI2CHandle_t const pxI2CPeripheral,
                         *config = pxHandle->config;
                 } break;
                 case eI2CGetBusState: {
-                        if (pxHandle->handle.State & HAL_I2C_STATE_BUSY)
+                        if (HAL_I2C_GetState(&pxHandle->handle) & HAL_I2C_STATE_BUSY)
                                 *(uint16_t *)pvBuffer = eI2cBusBusy;
                         else
                                 *(uint16_t *)pvBuffer = eI2CBusIdle;
