@@ -37,7 +37,7 @@ void prv_iot_uart_irq() {
         }
 }
 
-void prv_iot_exec_callback(UART_HandleTypeDef *handle, IotUARTOperationStatus_t xStatus) {
+void prv_iot_uart_callback(UART_HandleTypeDef *handle, IotUARTOperationStatus_t xStatus) {
         const linked_list_t *iter = uart_list;
 
         while (iter != NULL) {
@@ -51,19 +51,19 @@ void prv_iot_exec_callback(UART_HandleTypeDef *handle, IotUARTOperationStatus_t 
 }
 
 void prv_iot_uart_error_callback(UART_HandleTypeDef *handle) {
-        if (handle->RxState == HAL_UART_STATE_BUSY_RX)
-                prv_iot_exec_callback(handle, eUartLastReadFailed);
+        if (HAL_UART_GetState(handle) == HAL_UART_STATE_BUSY_RX)
+                prv_iot_uart_callback(handle, eUartLastReadFailed);
 
-        if (handle->gState == HAL_UART_STATE_BUSY_TX)
-                prv_iot_exec_callback(handle, eUartLastWriteFailed);
+        if (HAL_UART_GetState(handle) == HAL_UART_STATE_BUSY_TX)
+                prv_iot_uart_callback(handle, eUartLastWriteFailed);
 }
 
 void prv_iot_uart_tx_completed_callback(UART_HandleTypeDef *handle) {
-        prv_iot_exec_callback(handle, eUartWriteCompleted);
+        prv_iot_uart_callback(handle, eUartWriteCompleted);
 }
 
 void prv_iot_uart_rx_completed_callback(UART_HandleTypeDef *handle) {
-        prv_iot_exec_callback(handle, eUartReadCompleted);
+        prv_iot_uart_callback(handle, eUartReadCompleted);
 }
 
 IotUARTHandle_t iot_uart_open( int32_t lUartInstance ) {
@@ -114,6 +114,9 @@ IotUARTHandle_t iot_uart_open( int32_t lUartInstance ) {
         pxHandle->handle.ErrorCallback = prv_iot_uart_error_callback;
         pxHandle->handle.TxCpltCallback = prv_iot_uart_tx_completed_callback;
         pxHandle->handle.RxCpltCallback = prv_iot_uart_rx_completed_callback;
+
+        HAL_NVIC_SetPriority(pxHandle->irq, 0, 0);
+        HAL_NVIC_EnableIRQ(pxHandle->irq);
 
         uart_list = ll_append(uart_list, pxHandle);
 
@@ -288,9 +291,6 @@ int32_t iot_uart_ioctl( IotUARTHandle_t const pxUartPeripheral,
                 case eGetRxNoOfbytes: *(uint16_t *)pvBuffer = pxHandle->handle.RxXferSize; break;
                 default: return IOT_UART_INVALID_VALUE;
         }
-
-        HAL_NVIC_SetPriority(pxHandle->irq, 0, 0);
-        HAL_NVIC_EnableIRQ(pxHandle->irq);
 
         return IOT_UART_SUCCESS;
 }
