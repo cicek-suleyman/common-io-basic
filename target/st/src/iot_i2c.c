@@ -187,7 +187,7 @@ int32_t iot_i2c_write_sync( IotI2CHandle_t const pxI2CPeripheral,
                 return IOT_I2C_BUS_TIMEOUT;
 
         if (status == HAL_ERROR)
-                return IOT_I2C_READ_FAILED;
+                return IOT_I2C_WRITE_FAILED;
 
         return IOT_I2C_SUCCESS;
 }
@@ -237,7 +237,7 @@ int32_t iot_i2c_write_async( IotI2CHandle_t const pxI2CPeripheral,
                 return IOT_I2C_BUS_TIMEOUT;
 
         if (status == HAL_ERROR)
-                return IOT_I2C_READ_FAILED;
+                return IOT_I2C_WRITE_FAILED;
 
         return IOT_I2C_SUCCESS;
 }
