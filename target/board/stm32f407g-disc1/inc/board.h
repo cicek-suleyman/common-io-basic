@@ -8,11 +8,13 @@
 #include "hal.h"
 #include "iot_gpio.h"
 #include "iot_i2c.h"
+#include "iot_i2s.h"
 #include "iot_spi.h"
 
 extern IotGpioHandle_t ld3, ld4, ld5, ld6;
 extern IotGpioHandle_t b1;
 extern IotI2CHandle_t i2c1;
+extern IotI2SHandle_t i2s3;
 extern IotSPIHandle_t spi1;
 
 int BoardInit(void);
