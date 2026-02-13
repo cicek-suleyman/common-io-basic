@@ -52,11 +52,11 @@ void prv_iot_spi_transfer_completed_callback(SPI_HandleTypeDef *hspi) {
 }
 
 void prv_iot_spi_error_callback(SPI_HandleTypeDef *hspi) {
-        if (hspi->State == HAL_SPI_STATE_BUSY_TX)
+        if (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX)
                 prv_iot_spi_callback(hspi, eSPIWriteError);
-        else if (hspi->State == HAL_SPI_STATE_BUSY_RX)
+        else if (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_RX)
                 prv_iot_spi_callback(hspi, eSPIReadError);
-        else if (hspi->State == HAL_SPI_STATE_BUSY_TX_RX)
+        else if (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX_RX)
                 prv_iot_spi_callback(hspi, eSPITransferError);
 }
 
@@ -154,8 +154,7 @@ int32_t iot_spi_ioctl( IotSPIHandle_t const pxSPIPeripheral,
                                 return IOT_SPI_INVALID_VALUE;
 
                         uint32_t prescaler = pclk/config->ulFreq;
-                        prescaler % 2 == 0 ? :prescaler--;
-
+                        if (prescaler % 2 != 0) prescaler--;
 
                         switch (prescaler) {
                                 case 2: pxHandle->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; break;
@@ -309,3 +308,45 @@ int32_t iot_spi_transfer_async( IotSPIHandle_t const pxSPIPeripheral,
         return IOT_SPI_SUCCESS;
 }
 
+int32_t iot_spi_close( IotSPIHandle_t const pxSPIPeripheral ) {
+        if (pxSPIPeripheral == NULL)
+                return IOT_I2C_INVALID_VALUE;
+        SPIHandle_t *pxHandle = (SPIHandle_t *)pxSPIPeripheral;
+
+        if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_RESET)
+                return IOT_I2C_INVALID_VALUE;
+
+        HAL_SPI_DeInit(&pxHandle->handle);
+
+        extern volatile uint32_t g_pfnRamVectors[];
+        g_pfnRamVectors[NVIC_USER_IRQ_OFFSET + pxHandle->irq] = 0x00;
+
+        spi_list = ll_remove(spi_list, pxHandle);
+        free( pxHandle );
+
+        return IOT_I2C_SUCCESS;
+}
+
+int32_t iot_spi_cancel( IotSPIHandle_t const pxSPIPeripheral ) {
+        if (pxSPIPeripheral == NULL)
+                return IOT_SPI_INVALID_VALUE;
+        SPIHandle_t *pxHandle = (SPIHandle_t *)pxSPIPeripheral;
+
+        if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_RESET)
+                return IOT_I2C_INVALID_VALUE;
+
+        if (HAL_SPI_GetState(&pxHandle->handle) & HAL_SPI_STATE_READY)
+                return IOT_I2C_NOTHING_TO_CANCEL;
+
+        if (pxHandle->handle.Instance->CR1 & SPI_CR2_RXNEIE || pxHandle->handle.Instance->CR1 & SPI_CR2_TXEIE)
+                HAL_SPI_Abort_IT(&pxHandle->handle);
+        else HAL_SPI_Abort(&pxHandle->handle);
+
+        return IOT_SPI_SUCCESS;
+}
+
+int32_t iot_spi_select_slave( int32_t lSPIInstance,
+                              int32_t lSPISlave ) {
+        // TODO
+        return IOT_SPI_INVALID_VALUE;
+}
