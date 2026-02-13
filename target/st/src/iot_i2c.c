@@ -49,6 +49,30 @@ void prv_iot_i2c_er_irq() {
         }
 }
 
+void prv_iot_i2c_callback(I2C_HandleTypeDef *handle, IotI2COperationStatus_t xOpStatus) {
+        const linked_list_t *iter = i2c_list;
+
+        while (iter != NULL) {
+                const I2CHandle_t *ptr = (I2CHandle_t *)iter->ptr;
+                if (ptr != NULL) {
+                        if (&ptr->handle == handle && ptr->callback != NULL) ptr->callback(xOpStatus, ptr->pvUserContext);
+                        return;
+                }
+                iter = iter->next;
+        }
+}
+
+void prv_iot_i2c_master_transfer_completed_callback(I2C_HandleTypeDef *hi2c) {
+        prv_iot_i2c_callback(hi2c, eI2CCompleted);
+}
+
+void prv_iot_i2c_error_callback(I2C_HandleTypeDef *hi2c) {
+        if(HAL_I2C_GetState(hi2c) == HAL_I2C_STATE_TIMEOUT)
+                prv_iot_i2c_callback(hi2c, eI2CMasterTimeout);
+        else prv_iot_i2c_callback(hi2c, eI2CDriverFailed);
+        // TODO eI2CNackFromSlave
+}
+
 IotI2CHandle_t iot_i2c_open( int32_t lI2CInstance ) {
         I2CHandle_t *pxHandle = malloc(sizeof(I2CHandle_t));
         memset(pxHandle, 0, sizeof(I2CHandle_t));
@@ -92,7 +116,11 @@ IotI2CHandle_t iot_i2c_open( int32_t lI2CInstance ) {
         pxHandle->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
         pxHandle->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
+        pxHandle->handle.MasterTxCpltCallback = prv_iot_i2c_master_transfer_completed_callback;
+        pxHandle->handle.MasterRxCpltCallback = prv_iot_i2c_master_transfer_completed_callback;
+        pxHandle->handle.ErrorCallback = prv_iot_i2c_error_callback;
         // TODO register irq callbacks
+        // pxHandle->handle.ListenCpltCallback = NULL;
 
         HAL_NVIC_SetPriority(pxHandle->irq, 0, 0);
         HAL_NVIC_EnableIRQ(pxHandle->irq);
@@ -243,7 +271,8 @@ int32_t iot_i2c_ioctl( IotI2CHandle_t const pxI2CPeripheral,
                         *config = pxHandle->config;
                 } break;
                 case eI2CGetBusState: {
-                        if (HAL_I2C_GetState(&pxHandle->handle) & HAL_I2C_STATE_BUSY)
+                        HAL_I2C_StateTypeDef state = HAL_I2C_GetState(&pxHandle->handle);
+                        if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_TX || state == HAL_I2C_STATE_BUSY_RX)
                                 *(uint16_t *)pvBuffer = eI2cBusBusy;
                         else
                                 *(uint16_t *)pvBuffer = eI2CBusIdle;
@@ -268,7 +297,7 @@ int32_t iot_i2c_close( IotI2CHandle_t const pxI2CPeripheral ) {
 
         I2CHandle_t *pxHandle = (I2CHandle_t *)pxI2CPeripheral;
 
-        if (pxHandle->handle.State == HAL_I2C_STATE_RESET)
+        if (HAL_I2C_GetState(&pxHandle->handle) == HAL_I2C_STATE_RESET)
                 return IOT_I2C_INVALID_VALUE;
 
         HAL_I2C_DeInit(&pxHandle->handle);
@@ -289,10 +318,10 @@ int32_t iot_i2c_cancel( IotI2CHandle_t const pxI2CPeripheral ) {
 
         I2CHandle_t *pxHandle = (I2CHandle_t *)pxI2CPeripheral;
 
-        if (pxHandle->handle.State == HAL_I2C_STATE_RESET)
+        if (HAL_I2C_GetState(&pxHandle->handle) == HAL_I2C_STATE_RESET)
                 return IOT_I2C_INVALID_VALUE;
 
-        if (pxHandle->handle.State & HAL_I2C_STATE_READY)
+        if (HAL_I2C_GetState(&pxHandle->handle) == HAL_I2C_STATE_READY)
                 return IOT_I2C_NOTHING_TO_CANCEL;
 
         if (pxHandle->handle.Instance->CR2 & I2C_CR2_ITERREN || pxHandle->handle.Instance->CR2 & I2C_CR2_ITEVTEN) {
