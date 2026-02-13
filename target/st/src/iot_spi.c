@@ -335,7 +335,7 @@ int32_t iot_spi_cancel( IotSPIHandle_t const pxSPIPeripheral ) {
         if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_RESET)
                 return IOT_I2C_INVALID_VALUE;
 
-        if (HAL_SPI_GetState(&pxHandle->handle) & HAL_SPI_STATE_READY)
+        if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_READY)
                 return IOT_I2C_NOTHING_TO_CANCEL;
 
         if (pxHandle->handle.Instance->CR1 & SPI_CR2_RXNEIE || pxHandle->handle.Instance->CR1 & SPI_CR2_TXEIE)
