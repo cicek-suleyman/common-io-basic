@@ -73,7 +73,9 @@ IotSPIHandle_t iot_spi_open( int32_t lSPIInstance ) {
         switch (lSPIInstance) {
                 case 1: instance = SPI1; pxHandle->irq = SPI1_IRQn; break;
                 case 2: instance = SPI2; pxHandle->irq = SPI2_IRQn; break;
+#ifdef SPI3
                 case 3: instance = SPI3; pxHandle->irq = SPI3_IRQn; break;
+#endif
                 default: free( pxHandle ); return NULL;
         }
 
@@ -310,11 +312,11 @@ int32_t iot_spi_transfer_async( IotSPIHandle_t const pxSPIPeripheral,
 
 int32_t iot_spi_close( IotSPIHandle_t const pxSPIPeripheral ) {
         if (pxSPIPeripheral == NULL)
-                return IOT_I2C_INVALID_VALUE;
+                return IOT_SPI_INVALID_VALUE;
         SPIHandle_t *pxHandle = (SPIHandle_t *)pxSPIPeripheral;
 
         if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_RESET)
-                return IOT_I2C_INVALID_VALUE;
+                return IOT_SPI_INVALID_VALUE;
 
         HAL_SPI_DeInit(&pxHandle->handle);
 
@@ -324,7 +326,7 @@ int32_t iot_spi_close( IotSPIHandle_t const pxSPIPeripheral ) {
         spi_list = ll_remove(spi_list, pxHandle);
         free( pxHandle );
 
-        return IOT_I2C_SUCCESS;
+        return IOT_SPI_SUCCESS;
 }
 
 int32_t iot_spi_cancel( IotSPIHandle_t const pxSPIPeripheral ) {
@@ -333,10 +335,10 @@ int32_t iot_spi_cancel( IotSPIHandle_t const pxSPIPeripheral ) {
         SPIHandle_t *pxHandle = (SPIHandle_t *)pxSPIPeripheral;
 
         if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_RESET)
-                return IOT_I2C_INVALID_VALUE;
+                return IOT_SPI_INVALID_VALUE;
 
         if (HAL_SPI_GetState(&pxHandle->handle) == HAL_SPI_STATE_READY)
-                return IOT_I2C_NOTHING_TO_CANCEL;
+                return IOT_SPI_NOTHING_TO_CANCEL;
 
         if (pxHandle->handle.Instance->CR1 & SPI_CR2_RXNEIE || pxHandle->handle.Instance->CR1 & SPI_CR2_TXEIE)
                 HAL_SPI_Abort_IT(&pxHandle->handle);
