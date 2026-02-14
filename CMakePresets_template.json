@@ -1,0 +1,59 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "nucleo-f103rb",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "cacheVariables": {
+                "BOARD": "nucleo-f103rb"
+            }
+        },
+        {
+            "name": "nucleo-f401re",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "cacheVariables": {
+                "BOARD": "nucleo-f401re"
+            }
+        },
+        {
+            "name": "stm32f407g-disc1",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "cacheVariables": {
+                "BOARD": "stm32f407g-disc1"
+            }
+        },
+        {
+            "name": "Debug",
+            "inherits": "stm32f407g-disc1",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release",
+            "inherits": "stm32f407g-disc1",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release"
+        }
+    ]
+}
