@@ -49,13 +49,4 @@ target_link_libraries(HAL_TARGET INTERFACE
 
 target_link_options(HAL_TARGET INTERFACE
         -T ${TARGET_LINKER_FILE}
-        -mcpu=cortex-m4
-        -mfpu=fpv4-sp-d16
-        -mfloat-abi=hard
-)
-
-target_compile_options(HAL_TARGET INTERFACE
-        -mcpu=cortex-m4
-        -mfpu=fpv4-sp-d16
-        -mfloat-abi=hard
 )

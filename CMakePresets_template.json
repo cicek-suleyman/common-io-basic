@@ -2,33 +2,37 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "nucleo-f103rb",
+            "name": "gcc-arm-none-eabi",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake"
+        },
+        {
+            "name": "nucleo-f103rb",
+            "hidden": true,
+            "inherits": "gcc-arm-none-eabi",
             "cacheVariables": {
-                "BOARD": "nucleo-f103rb"
+                "BOARD": "nucleo-f103rb",
+                "TARGET_FLAGS": "-mcpu=cortex-m3 "
             }
         },
         {
             "name": "nucleo-f401re",
             "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "inherits": "gcc-arm-none-eabi",
             "cacheVariables": {
-                "BOARD": "nucleo-f401re"
+                "BOARD": "nucleo-f401re",
+                "TARGET_FLAGS": "-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard "
             }
         },
         {
             "name": "stm32f407g-disc1",
             "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "toolchainFile": "${sourceDir}/lib/AWS/common-io-basic/toolchain/gcc-arm-none-eabi.cmake",
+            "inherits": "gcc-arm-none-eabi",
             "cacheVariables": {
-                "BOARD": "stm32f407g-disc1"
+                "BOARD": "stm32f407g-disc1",
+                "TARGET_FLAGS": "-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard "
             }
         },
         {
